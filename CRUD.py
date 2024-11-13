@@ -29,11 +29,7 @@ def create(engine, name_of_table: str, columns_and_values: dict):
     try:
         with engine.connect() as engine_connected:
             with engine_connected.begin():
-                result = engine_connected.execute(text(command), columns_and_values)
-                if result.rowcount > 0:
-                    print("Ligne insérée avec succès.")
-                else:
-                    print("Aucune ligne n'a été insérée.")
+                engine_connected.execute(text(command), columns_and_values)
     except SQLAlchemyError as error:
         print(error)
 
