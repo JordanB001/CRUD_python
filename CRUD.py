@@ -3,22 +3,19 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.persistence import delete_obj
 
 
-def read(engine, name_of_table, name_of_column):
+def read(engine, list_of_tables, list_of_columns):
+    tables = ", ".join(list_of_tables)
+    columns = ", ".join(list_of_columns)
 
-    with engine.connect() as engine_connected:
-        result = engine_connected.execute(select(name_of_column).select_from(text(name_of_table))).fetchone()
+    command = f"SELECT {columns} FROM {tables}"
 
-        inspector = inspect(engine_connected)
-        all_columns = inspector.get_columns(name_of_table)
-        column_names = []
-        for column in all_columns:
-            column_names.append(column["name"])
-
-
-
-
-        print(f"    ".join(column_names) + f"\n---------------------------------------")
-        print(f"{result}")
+    try:
+        with engine.connect() as engine_connected:
+            with engine_connected.begin():
+                result = engine_connected.execute(text(command)).fetchall()
+                return result
+    except SQLAlchemyError as error:
+        print(error)
 
 def create(engine, name_of_table: str, columns_and_values: dict):
     columns = ", ".join(columns_and_values.keys())
