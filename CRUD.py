@@ -1,7 +1,5 @@
 from sqlalchemy import inspect, select, text, delete, values
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm.persistence import delete_obj
-
 
 def read(engine, list_of_tables, list_of_columns):
     tables = ", ".join(list_of_tables)
@@ -30,8 +28,19 @@ def create(engine, name_of_table: str, columns_and_values: dict):
     except SQLAlchemyError as error:
         print(error)
 
-def update(engine):
-    pass
+def update(engine, name_of_table, columns_and_values, condition=""):
+    attribution = ", ".join([f"{column} = :{column}" for column in columns_and_values.keys()]) #compréhension de liste
+    command = f"UPDATE {name_of_table} SET {attribution}"
+
+    if condition:
+        command += f" WHERE {condition}"
+
+    try:
+        with engine.connect() as engine_connected:
+            with engine_connected.begin():
+                engine_connected.execute(text(command), columns_and_values)
+    except SQLAlchemyError as error:
+        print(error)
 
 def delete(engine, name_of_table, condition=""):
     if condition == "":
