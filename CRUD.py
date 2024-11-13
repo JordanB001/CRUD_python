@@ -1,4 +1,4 @@
-from sqlalchemy import inspect, select, text, delete
+from sqlalchemy import inspect, select, text, delete, values
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm.persistence import delete_obj
 
@@ -20,8 +20,22 @@ def read(engine, name_of_table, name_of_column):
         print(f"    ".join(column_names) + f"\n---------------------------------------")
         print(f"{result}")
 
-def create(engine):
-    pass
+def create(engine, name_of_table: str, columns_and_values: dict):
+    columns = ", ".join(columns_and_values.keys())
+    values = ', '.join([f"'{column}'" for column in columns_and_values.keys()])
+
+    command = f"INSERT INTO {name_of_table} ({columns}) VALUES ({values})"
+
+    try:
+        with engine.connect() as engine_connected:
+            with engine_connected.begin():
+                result = engine_connected.execute(text(command), columns_and_values)
+                if result.rowcount > 0:
+                    print("Ligne insérée avec succès.")
+                else:
+                    print("Aucune ligne n'a été insérée.")
+    except SQLAlchemyError as error:
+        print(error)
 
 def update(engine):
     pass
@@ -39,4 +53,5 @@ def delete(engine, name_of_table, condition=""):
             engine_connected.commit()
         except SQLAlchemyError as error:
             print(f"Error during commit : {error}")
+
 
