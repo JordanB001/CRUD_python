@@ -1,11 +1,14 @@
 from sqlalchemy import inspect, select, text, delete, values
 from sqlalchemy.exc import SQLAlchemyError
 
-def read(engine, list_of_tables, list_of_columns):
+def read(engine, list_of_tables: list, list_of_columns: list, condition=""):
     tables = ", ".join(list_of_tables)
     columns = ", ".join(list_of_columns)
 
     command = f"SELECT {columns} FROM {tables}"
+
+    if condition:
+        command += f" WHERE {condition}"
 
     try:
         with engine.connect() as engine_connected:
