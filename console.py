@@ -31,7 +31,12 @@ def console(engine, command):
                 with engine_connected.begin():
                     print(f"Command SQL : {text(command)}")
                     result = engine_connected.execute(text(command))
-                    return result
+
+                    if result.returns_rows:
+                        return result.fetchall()
+                    else:
+                        return "Command execute successfully"
+
         except ProgrammingError:
             raise IncorectCommand
 
