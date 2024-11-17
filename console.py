@@ -8,8 +8,9 @@ def console(engine, command):
 
     try:
         with engine.connect() as engine_connected:
-            with engine.connected.begin():
-                engine_connected.execute(text(command))
+            with engine_connected.begin():
+                result = engine_connected.execute(text(command))
+                return result
     except ProgrammingError:
         raise IncorectCommand
 
